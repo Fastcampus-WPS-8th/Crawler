@@ -37,6 +37,7 @@ url_episode_list = 'http://comic.naver.com/webtoon/list.nhn'
 params = {
     'titleId': 703845,
 }
+# -> 'http://com....nhn?titleId=703845
 
 # HTML파일이 로컬에 저장되어 있는지 검사
 if os.path.exists(file_path):
@@ -76,3 +77,126 @@ print(description)
 #  no:              에피소드 상세페이지의 고유 번호
 #   각 에피소드들은 하나의 dict데이터
 #   모든 에피소드들을 list에 넣는다
+
+# 에피소드 목록을 담고 있는 table
+table = soup.select_one('table.viewList')
+
+# table내의 모든 tr요소 목록
+tr_list = table.select('tr')
+
+# 첫 번째 tr은 thead의 tr이므로 제외, tr_list의 [1:]부터 순회
+for index, tr in enumerate(tr_list[1:]):
+    # 에피소드에 해당하는 tr은 클래스가 없으므로,
+    # 현재 순회중인 tr요소가 클래스 속성값을 가진다면 continue
+    if tr.get('class'):
+        continue
+
+    # 현재 tr의 첫 번째 td요소의 하위 img태그의 'src'속성값
+    url_thumbnail = tr.select_one('td:nth-of-type(1) img').get('src')
+    # 현재 tr의 첫 번째 td요소의 자식   a태그의 'href'속성값
+    from urllib import parse
+    url_detail = tr.select_one('td:nth-of-type(1) > a').get('href')
+    query_string = parse.urlsplit(url_detail).query
+    query_dict = parse.parse_qs(query_string)
+    # print(query_dict)
+    no = query_dict['no'][0]
+
+    # 현재 tr의 두 번째 td요소의 자식 a요소의 내용
+    title = tr.select_one('td:nth-of-type(2) > a').get_text(strip=True)
+    # 현재 tr의 세 번째 td요소의 하위 strong태그의 내용
+    rating = tr.select_one('td:nth-of-type(3) strong').get_text(strip=True)
+    # 현재 tr의 네 번째 td요소의 내용
+    created_date = tr.select_one('td:nth-of-type(4)').get_text(strip=True)
+
+    print(url_thumbnail)
+    print(title)
+    print(rating)
+    print(created_date)
+    print(no)
+
+episode_list = [
+    {
+        'url_thumbnail': ...,
+    },
+    {
+
+    }
+]
+
+# 4. 에피소드를 클래스로 구현
+#   class Episode
+#       attrs:
+#           webtoon_id:     웹툰의 고유번호
+#           no:             에피소드의 고유번호
+#           url_thumbnail
+#           title
+#           rating
+#           created_date
+
+#       property:
+#           url (실제 에피소드 페이지의 URL을 리턴)
+#               파이썬 내장 urllib에 탑재되어있는 함수를 사용해서 생성
+#               ex) http://comic.naver.com/webtoon/detail.nhn?titleId=703845&no=18
+
+# 4-1. 위에서 dict형태로 만들던 로직을 클래스 인스턴스 생성방식으로 변경
+#  episode_list리스트는 Episode인스턴스들을 자신의 요소로 가짐
+
+
+# 숙제 1. 웹툰, 에피소드 이미지 클래스 작성, 에피소드 클래스 인스턴스를 내부에 가짐
+# class Webtoon
+#       attrs:
+#           webtoon_id
+#           title
+#           author
+#           description
+#           episode_list
+#       methods:
+#           update: 웹에서 가져온 데이터를 사용해 Episode인스턴스들을 생성, 자신의 episode_list에 추가
+#
+#
+# >>> yumi = Webtoon(651673)
+# >>> yumi.title
+# 유미와 세포들
+
+# >>> yumi.author
+# 이동건
+
+# >>> yumi.update() <- update() 호출 안하고 yumi.episode_list에도 접근할 수 있도록 한다면?
+# >>> for episode in yumi.episode_list:
+# >>>    print(episode.title)
+# 306화 ...
+# 305화 ...
+
+# 숙제 1. extra1) 에피소드 이미지 클래스 추가
+# class EpisodeImage (각 에피소드가 가진 이미지들 중 하나를 나타냄)
+#       attrs:
+#           episode
+#           url
+#
+# Episode클래스에 image_list 속성 추가
+#  상세페이지 크롤링 시 image_list를 EpisodeImage의 인스턴스로 채움
+
+# 숙제 1. extra2) 웹툰 검색하기
+# >>> webtoon = Webtoon.search_webtoon('대학')
+# 1. 대학일기
+# 2. 안녕, 대학생
+#  선택: 1
+# webtoon에 해당 웹툰의 id를 기반으로 생성자 실행 결과 (인스턴스) 할당
+
+# 숙제 1. extra3) 에피소드의 이미지 다운로드 및 HTML생성 (매우오래걸림)
+# >>> episode = Webtoon.episode_list[0]
+# >>> episode.download()
+# 특정 폴더에 해당 웹툰의 이미지들 다운로드하고 해당 이미지에 src속성을 가진 img태그들 목록을 갖는 HTML을 생성
+
+
+# 숙제 2. DjangoGirls Tutorial 읽고 오기
+#  https://tutorial.djangogirls.org/ko/
+
+# extra1) 해보기
+#  설치하기
+#  Python설치하기
+#  코드에디터
+#  pythonanywhere배포
+#   부분은 제외
+#  django설치시 버전 특정화 해서 설치 (최신버전 안됨)
+
