@@ -27,9 +27,19 @@ class Episode:
             'titleId': self.webtoon_id,
             'no': self.no,
         }
-
         episode_url = url + parse.urlencode(params)
         return episode_url
+
+    def get_image_url_list(self):
+        # 해당 에피소드의 이미지들의 URL문자열들을 리스트에 담아 리턴
+        # 1. html 문자열 변수 할당
+        #  파일명: episode_detail-{webtoon_id}-{episode_no}.html
+        #  없으면 자신의 url property값으로 requests사용 결과를 저장
+        # 2. soup객체 생성 후 파싱
+        #  div.wt_viewer의 자식 img요소들의 src속성들을 가져옴
+        # 적절히 list에 append하고 리턴하자
+        print('get_image_url_list')
+        pass
 
 
 class Webtoon:
@@ -38,7 +48,7 @@ class Webtoon:
         self._title = None
         self._author = None
         self._description = None
-        self.episode_list = list()
+        self._episode_list = list()
         self._html = ''
 
     def _get_info(self, attr_name):
@@ -157,9 +167,10 @@ class Webtoon:
             )
             # episode_lists Episode 인스턴스들 추가
             episode_list.append(new_episode)
-        self.episode_list = episode_list
+        self._episode_list = episode_list
 
-    def get_episode_list(self):
+    @property
+    def episode_list(self):
         # self.episode_list가 빈 리스트가 아니라면
         #  -> self.episode_list를 반환
         # self.episode_list가 비어있다면
@@ -169,7 +180,15 @@ class Webtoon:
         # 다했으면
         # episode_list속성이름을 _episode_list로 변경
         # 이 함수의 이름을 episode_list로 변경 후 property설정
-        pass
+        if not self._episode_list:
+            self.crawl_episode_list()
+        return self._episode_list
+
+        # if self.episode_list:
+        #     return self.episode_list
+        # else:
+        #     self.crawl_episode_list()
+        #     return self.episode_list
 
 
 if __name__ == '__main__':
@@ -177,5 +196,5 @@ if __name__ == '__main__':
     print(webtoon1.title)
     print(webtoon1.author)
     print(webtoon1.description)
-    for episode in webtoon1.episode_list:
-        print(episode.title)
+    e1 = webtoon1.episode_list[0]
+    print(e1.get_image_url_list())
